@@ -4,7 +4,6 @@ try:
     import json
     import random
     from imutils.video import VideoStream
-    # from tracker import get_pos
     from collections import deque
     import numpy as np
     import cv2
@@ -21,6 +20,16 @@ except ModuleNotFoundError:
         print("run install_dependencies.py or see requirements.txt to resolve dependencies")
         exit()
 
+# set config
+with open("conf.json", 'r') as f:
+	conf = json.load(f)
+USE_MOTION = conf["use_motion"]
+SHOW_VID = conf["show_vid"] and USE_MOTION
+SHIELD_BONUS = conf["shield_bonus"]
+POWERUP_TIME = conf["powerup_time"]
+SHOOT_DELAY = conf["shoot_delay"]
+
+#! tracking
 buffer = 64
 
 # define the lower and upper boundaries of the "green"
@@ -34,22 +43,9 @@ points = []
 # grab reference to the webcam
 vs = VideoStream(src=0).start()
 
-# set config
-with open("conf.json", 'r') as f:
-	conf = json.load(f)
-USE_MOTION = conf["use_motion"]
-SHOW_VID = conf["show_vid"] and USE_MOTION
-SHIELD_BONUS = conf["shield_bonus"]
-POWERUP_TIME = conf["powerup_time"]
-SHOOT_DELAY = conf["shoot_delay"]
-
-greenLower = (29, 86, 6)
-greenUpper = (64, 255, 255)
-	
 # allow the camera or video file to warm up
 time.sleep(2)
 
-# keep looping
 def get_pos():
 	# grab the current frame
 	frame = vs.read()
@@ -129,7 +125,6 @@ def get_pos():
 # Frozen Jam by tgfcoder
 # Art from Kenney.nl
 
-
 art_dir = os.path.join(os.path.dirname(__file__), 'art')
 snd_dir = os.path.join(os.path.dirname(__file__), 'snd')
 
@@ -163,7 +158,6 @@ background_rect = background.get_rect()
 player_img = pygame.image.load(os.path.join(art_dir, "ship")).convert()
 player_mini_img = pygame.transform.scale(player_img, (25, 19))
 player_mini_img.set_colorkey(BLACK)
-# meteor_img = pygame.image.load(os.path.join(art_dir, "meteor")).convert()
 bullet_img_1 = pygame.image.load(os.path.join(art_dir, "laser_blue")).convert()
 bullet_img_1 = pygame.transform.scale(bullet_img_1, (10, 30))
 bullet_img_2 = pygame.image.load(os.path.join(art_dir, "laser_red")).convert()
@@ -456,7 +450,7 @@ def show_go_screen():
 			if event.type == pygame.KEYUP:
 				waiting = False
 
-# Game loop
+#! Game loop
 game_over = True
 running = True
 while running:

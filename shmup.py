@@ -15,7 +15,7 @@ except ModuleNotFoundError:
     x = input("would you like to install dependencies? (y/n)? ")
     if x == 'y':
         os.system("pip install -r requirements.txt")
-        os.system("python3 shmup.py")
+        os.system("py shmup.py")
         exit()
     else:
         print("run install_dependencies.py or see requirements.txt to resolve dependencies")

@@ -1,6 +1,6 @@
 {
   "use_motion": true,
-  "show_screen": true,
+  "show_vid": true,
   "shield_bonus": [20, 40],
   "powerup_time": 5000,
   "shoot_delay": 400

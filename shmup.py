@@ -1,6 +1,7 @@
 import os
 try:
     import pygame
+    import json
     import random
     from imutils.video import VideoStream
     # from tracker import get_pos
@@ -32,8 +33,15 @@ points = []
 
 # grab reference to the webcam
 vs = VideoStream(src=0).start()
-USE_MOTION = True
-SHOW_VID = True
+
+# set config
+with open("conf.json", 'r') as f:
+	conf = json.load(f)
+USE_MOTION = conf["use_motion"]
+SHOW_VID = conf["show_vid"] and USE_MOTION
+SHIELD_BONUS = conf["shield_bonus"]
+POWERUP_TIME = conf["powerup_time"]
+SHOOT_DELAY = conf["shoot_delay"]
 
 greenLower = (29, 86, 6)
 greenUpper = (64, 255, 255)
@@ -146,8 +154,6 @@ YELLOW = (255, 255, 0)
 CYAN = (0, 255, 255)
 PURPLE = (255, 0, 255)
 
-SHIELD_BONUS = [20, 40]
-POWERUP_TIME = 5000
 
 # Load all game graphics
 background = pygame.image.load(os.path.join(art_dir, "background"))
@@ -248,7 +254,7 @@ class Player(pygame.sprite.Sprite):
 		self.rect.bottom = HEIGHT - 10
 		self.xspeed = 0
 		self.shield = Player.max_shield
-		self.shoot_delay = 444
+		self.shoot_delay = SHOOT_DELAY
 		self.last_shot = pygame.time.get_ticks()
 		self.lives = 3
 		self.hidden = False

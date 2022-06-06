@@ -1,9 +1,10 @@
-run 'pip install -r requirements.txt' while in this directory
-this will install all missing modules (ie opencv or pygame)
+running shmup will prompt you to install all dependencies
+install_dependencies.py runs the exact same process
+or you can manually install each package in requirements.txt
 
-then just run shmup.py like any python file
-to test the camera - live_tracker.py will show what the camera is tracking
-this will show the same view as during the game
-  helps set up your camera so you can reach both sides
-  shows if there are conflicting colors being tracked
+use live_tracker.py to trouble shoot the motion tracking system
+
+conf.json controls a few game settings. 
+
+tracker.py is a dependency to shmup.py
 

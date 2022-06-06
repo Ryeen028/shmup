@@ -3,7 +3,12 @@ try:
     import pygame
     import random
     from imutils.video import VideoStream
-    from tracker import get_pos
+    # from tracker import get_pos
+    from collections import deque
+    import numpy as np
+    import cv2
+    import imutils
+    import time
 except ModuleNotFoundError:
     print("missing dependencies...")
     x = input("would you like to install dependencies? (y/n)? ")
@@ -15,14 +20,107 @@ except ModuleNotFoundError:
         print("run install_dependencies.py or see requirements.txt to resolve dependencies")
         exit()
 
-# Frozen Jam by tgfcoder
-# Art from Kenney.nl
+buffer = 64
 
+# define the lower and upper boundaries of the "green"
+# ball in the HSV color space, then initialize the 
+# list of tracked points
+greenLower = (29, 86, 6)
+greenUpper = (64, 255, 255)
+pts = deque(maxlen=buffer)
+points = []
+
+# grab reference to the webcam
+vs = VideoStream(src=0).start()
 USE_MOTION = True
+SHOW_VID = True
 
 greenLower = (29, 86, 6)
 greenUpper = (64, 255, 255)
-vs = VideoStream(src=0).start()
+	
+# allow the camera or video file to warm up
+time.sleep(2)
+
+# keep looping
+def get_pos():
+	# grab the current frame
+	frame = vs.read()
+	frame = cv2.flip(frame, 1)
+
+	# if we are viewing a video and we did not grab a frame,
+	# then we have reached the end of the video
+	if frame is None:
+		return -50
+
+	# resize the frame, blur it, and convert it to the HSV
+	# color space
+	frame = imutils.resize(frame, width=480)
+	blurred = cv2.GaussianBlur(frame, (11, 11), 0)
+	hsv = cv2.cvtColor(blurred, cv2.COLOR_BGR2HSV)
+
+	# construct a mask for the color "green", then perform
+	# a series of dilations and erosions to remove any small
+	# blobs left in the mask
+	mask = cv2.inRange(hsv, greenLower, greenUpper)
+	mask = cv2.erode(mask, None, iterations=2)
+	mask = cv2.dilate(mask, None, iterations=2)
+
+	# find contours in the mask and initialize the current
+	# (x, y) center of the ball
+	cnts = cv2.findContours(mask.copy(), cv2.RETR_EXTERNAL,
+			cv2.CHAIN_APPROX_SIMPLE)
+	cnts = imutils.grab_contours(cnts)
+	center = None
+
+	# only proceed if at least one contour was found
+	if len(cnts) > 0:
+		# find the largest contour in the mask, then use
+		# it to compute the minimium enclosing circle and 
+		# centroid
+		c = max(cnts, key=cv2.contourArea)
+		((x,y), radius) = cv2.minEnclosingCircle(c)
+		M = cv2.moments(c)
+		center = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
+
+		if SHOW_VID:
+			# only proceed if the radius meets a minimum size
+			if radius > 10:
+				# draw the circle and centroid on the frame,
+				# then update the list of tracked points
+				cv2.circle(frame, (int(x), int(y)), int(radius),
+						(0, 255, 255), 2)
+				cv2.circle(frame, center, 5, (0, 0, 255), -1)
+
+			#update the points queue
+			pts.appendleft(center)
+			if center:
+				points.append((center[0], center[1], radius))
+
+			# loop over the set of tracked points
+			for i in range(1, len(pts)):
+				# if either of the tracked points are None, ignore 
+				# them
+				if pts[i-1] is None or pts[i] is None:
+					continue
+
+				# otherwise, compute the thickness of the line and
+				# draw the connecting lines
+				thickness = int(np.sqrt(buffer / float(i + 1)) * 2.5)
+				cv2.line(frame, pts[i-1], pts[i], (0, 0, 255), thickness)
+			
+			# show the frame to our screen
+			cv2.imshow("Frame", frame)
+			key = cv2.waitKey(1) & 0xFF
+			# if the 'q' key is pressed, stop the loop
+			if key == ord("q"):
+				return -50
+	if center is None:
+		return -50
+	return center[0]
+
+# Frozen Jam by tgfcoder
+# Art from Kenney.nl
+
 
 art_dir = os.path.join(os.path.dirname(__file__), 'art')
 snd_dir = os.path.join(os.path.dirname(__file__), 'snd')
@@ -453,3 +551,9 @@ while running:
 	pygame.display.flip()
 
 pygame.quit()
+
+# release the camera
+vs.stop()
+
+# close all windows
+cv2.destroyAllWindows()

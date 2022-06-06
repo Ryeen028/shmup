@@ -1,3 +1,8 @@
+# to resolve missing dependencies:
+#   allow shmup.py to install dependencies
+#   run install_dependencies.py
+#   manually pip install each of the following
+
 imutils==0.5.4
 numpy==1.22.3
 opencv_python==4.5.5.64

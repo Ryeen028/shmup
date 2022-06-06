@@ -1,8 +1,19 @@
-import pygame
 import os
-import random
-from imutils.video import VideoStream
-from tracker import get_pos
+try:
+    import pygame
+    import random
+    from imutils.video import VideoStream
+    from tracker import get_pos
+except ModuleNotFoundError:
+    print("missing dependencies...")
+    x = input("would you like to install dependencies? (y/n)? ")
+    if x == 'y':
+        os.system("pip install -r requirements.txt")
+        os.system("python3 shmup.py")
+        exit()
+    else:
+        print("run install_dependencies.py or see requirements.txt to resolve dependencies")
+        exit()
 
 # Frozen Jam by tgfcoder
 # Art from Kenney.nl

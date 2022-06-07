@@ -35,7 +35,9 @@ buffer = 64
 # define the lower and upper boundaries of the "green"
 # ball in the HSV color space, then initialize the 
 # list of tracked points
-greenLower = (29, 86, 6)
+# greenLower = (29, 86, 6)
+# greenUpper = (64, 255, 255)
+greenLower = (29, 86, 60)
 greenUpper = (64, 255, 255)
 pts = deque(maxlen=buffer)
 points = []
@@ -437,7 +439,11 @@ class Explosion(pygame.sprite.Sprite):
 def show_go_screen():
 	screen.blit(background, background_rect)
 	draw_text(screen, "SHMUP!", 64, WIDTH / 2, HEIGHT / 4)
-	draw_text(screen, "Arrow keys move, Space to fire", 22, WIDTH / 2, HEIGHT / 2)
+	if USE_MOTION:
+		draw_text(screen, "Move yourself to move the ship", 22, WIDTH / 2, HEIGHT / 2)
+	else:
+		draw_text(screen, "Arrow keys move, Space to fire", 22, WIDTH / 2, HEIGHT / 2)
+	
 	draw_text(screen, "Press a key to begin", 18, WIDTH / 2, HEIGHT * 3/4)
 	pygame.display.flip()
 	waiting = True
@@ -455,7 +461,6 @@ game_over = True
 running = True
 while running:
 	if game_over:
-		get_pos()
 		show_go_screen()
 		start_sound.play()
 		game_over = False
@@ -495,7 +500,6 @@ while running:
 				power = 1
 			else:
 				b.kill()
-
 		if hit.can_be_destroyed or power:
 			hit.kill()
 			if random.random() > 0.9:
